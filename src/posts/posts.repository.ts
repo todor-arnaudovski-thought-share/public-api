@@ -6,8 +6,8 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Post, PostDocument } from './post.schema';
-import { User } from 'src/users/user.schema';
 import { CreatePostDto } from './dto/create-post.dto';
+import { User } from 'src/users/user.schema';
 
 @Injectable()
 export class PostsRepository {
@@ -19,7 +19,7 @@ export class PostsRepository {
     try {
       return await this.postModel
         .find()
-        // .populate('createdBy')
+        .populate('createdBy upvotedBy')
         .sort({ createdAt: -1 })
         .exec();
     } catch (err) {
@@ -40,19 +40,38 @@ export class PostsRepository {
     }
   }
 
-  async upvote(postId: string, user: User): Promise<Post> {
+  async upvote(postPubId: string, user: User): Promise<Post> {
     try {
       return await this.postModel
-        .findByIdAndUpdate(
-          postId,
+        .findOneAndUpdate(
+          { pubId: postPubId },
           {
             $addToSet: { upvotedBy: user },
           },
           { new: true },
         )
+        .populate('createdBy upvotedBy')
         .exec();
     } catch (err) {
       this.logger.error('Error upvoting post', err);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async downvote(postPubId: string, user: User): Promise<Post> {
+    try {
+      return await this.postModel
+        .findOneAndUpdate(
+          { pubId: postPubId },
+          {
+            $pull: { upvotedBy: user._id },
+          },
+          { new: true },
+        )
+        .populate('createdBy upvotedBy')
+        .exec();
+    } catch (err) {
+      this.logger.error('Error downvoting post', err);
       throw new InternalServerErrorException();
     }
   }

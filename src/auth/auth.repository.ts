@@ -36,7 +36,10 @@ export class AuthRepository {
 
   async findUserByUsername(username: string): Promise<User> {
     try {
-      return await this.userModel.findOne({ username }).exec();
+      return await this.userModel
+        .findOne({ username })
+        .populate('upvotedPosts')
+        .exec();
     } catch (err) {
       throw new InternalServerErrorException();
     }

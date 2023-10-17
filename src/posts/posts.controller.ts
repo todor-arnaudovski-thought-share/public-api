@@ -6,7 +6,6 @@ import {
   Patch,
   Post,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -14,19 +13,18 @@ import { Post as PostModel } from './post.schema';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/users/get-user.decorator';
 import { User } from 'src/users/user.schema';
-import { PostsInterceptor } from './posts.interceptor';
+import { PostDto } from './dto/post.dto';
 
 @Controller('posts')
-@UseGuards(AuthGuard())
-@UseInterceptors(PostsInterceptor)
 export class PostsController {
   constructor(private postsService: PostsService) {}
 
   @Get()
-  async findAll(): Promise<PostModel[]> {
+  async findAll(): Promise<PostDto[]> {
     return await this.postsService.findAll();
   }
 
+  @UseGuards(AuthGuard())
   @Post()
   async create(
     @Body() createPostDto: CreatePostDto,
@@ -35,11 +33,21 @@ export class PostsController {
     return this.postsService.create(createPostDto, user);
   }
 
-  @Patch(':id')
+  @UseGuards(AuthGuard())
+  @Patch(':id/upvote')
   async upvote(
-    @Param('id') postId: string,
+    @Param('id') postPubId: string,
     @GetUser() user: User,
-  ): Promise<PostModel> {
-    return await this.postsService.upvote(postId, user);
+  ): Promise<PostDto> {
+    return await this.postsService.upvote(postPubId, user);
+  }
+
+  @UseGuards(AuthGuard())
+  @Patch(':id/downvote')
+  async downvote(
+    @Param('id') postPubId: string,
+    @GetUser() user: User,
+  ): Promise<PostDto> {
+    return await this.postsService.downvote(postPubId, user);
   }
 }

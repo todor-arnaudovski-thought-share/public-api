@@ -5,6 +5,8 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt-payload.interface';
 import { User } from 'src/users/user.schema';
+import { UserDto } from 'src/users/dto/user.dto';
+import { mapUserToDto } from 'src/users/user.mapper';
 
 @Injectable()
 export class AuthService {
@@ -19,15 +21,17 @@ export class AuthService {
 
   async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{
     accessToken: string;
+    userDto: UserDto;
   }> {
     const { username, password } = authCredentialsDto;
 
     const user = await this.usersRepository.findUserByUsername(username);
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      const payload: JwtPayload = { username };
+      const userDto = mapUserToDto(user);
+      const payload: JwtPayload = { pubId: user.pubId, username };
       const accessToken: string = await this.jwtService.signAsync(payload);
-      return { accessToken };
+      return { accessToken, userDto };
     } else {
       throw new UnauthorizedException('Wrong login credentials');
     }

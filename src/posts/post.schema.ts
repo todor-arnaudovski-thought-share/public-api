@@ -1,22 +1,25 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Expose } from 'class-transformer';
-import { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument, Types, Document } from 'mongoose';
+import { nanoid } from 'nanoid';
+import { User } from 'src/users/user.schema';
 
 export type PostDocument = HydratedDocument<Post>;
 
 @Schema({ timestamps: true })
-export class Post {
+export class Post extends Document {
+  createdAt: Date;
+
+  @Prop({ default: () => nanoid(), unique: true })
+  pubId: string;
+
   @Prop({ required: true })
-  @Expose()
   content: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  @Expose()
-  createdBy: Types.ObjectId;
+  createdBy: Types.ObjectId | User;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
-  @Expose()
-  upvotedBy: Types.ObjectId[];
+  upvotedBy: Types.ObjectId[] | User[];
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
