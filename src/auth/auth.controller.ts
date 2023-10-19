@@ -9,11 +9,11 @@ import {
 } from '@nestjs/common';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthService } from './auth.service';
-import { User } from '../users/user.schema';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
-import { UserDto } from 'src/users/dto/user.dto';
-import { mapUserToDto } from 'src/users/user.mapper';
+import { User } from '../models/users/schemas/user.schema';
+import { UserDto } from '../models/users/dto/user.dto';
+import { mapUserToDto } from '../models/users/mappers/user.mapper';
 
 @Controller('auth')
 export class AuthController {

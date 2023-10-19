@@ -3,10 +3,10 @@ import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthRepository } from './auth.repository';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from './jwt-payload.interface';
-import { User } from 'src/users/user.schema';
-import { UserDto } from 'src/users/dto/user.dto';
-import { mapUserToDto } from 'src/users/user.mapper';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { User } from '../models/users/schemas/user.schema';
+import { UserDto } from '../models/users/dto/user.dto';
+import { mapUserToDto } from '../models/users/mappers/user.mapper';
 
 @Injectable()
 export class AuthService {

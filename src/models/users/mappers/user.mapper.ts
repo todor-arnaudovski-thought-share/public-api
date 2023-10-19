@@ -1,9 +1,9 @@
-import { Post } from 'src/posts/post.schema';
-import { UserDto } from './dto/user.dto';
-import { User } from './user.schema';
+import { PostDto } from '../../posts/dto/post.dto';
+import { Post } from '../../posts/schemas/post.schema';
+import { mapPostToDto } from '../../posts/mappers/posts.mapper';
+import { UserDto } from '../dto/user.dto';
+import { User } from '../schemas/user.schema';
 import { Document } from 'mongoose';
-import { mapPostToDto } from 'src/posts/posts.mapper';
-import { PostDto } from 'src/posts/dto/post.dto';
 
 export function mapUserToDto(user: User): UserDto {
   const { pubId, username, upvotedPosts } = user;

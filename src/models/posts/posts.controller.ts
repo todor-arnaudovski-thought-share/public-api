@@ -9,11 +9,11 @@ import {
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
-import { Post as PostModel } from './post.schema';
+import { Post as PostModel } from './schemas/post.schema';
 import { AuthGuard } from '@nestjs/passport';
-import { GetUser } from 'src/users/get-user.decorator';
-import { User } from 'src/users/user.schema';
 import { PostDto } from './dto/post.dto';
+import { User } from '../users/schemas/user.schema';
+import { GetUser } from '../../common/decorators/requests/get-user.decorator';
 
 @Controller('posts')
 export class PostsController {

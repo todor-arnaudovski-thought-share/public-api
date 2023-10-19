@@ -1,11 +1,11 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Post } from './post.schema';
+import { Post } from './schemas/post.schema';
 import { CreatePostDto } from './dto/create-post.dto';
-import { User } from 'src/users/user.schema';
 import { PostsRepository } from './posts.repository';
-import { mapPostToDto } from './posts.mapper';
+import { mapPostToDto } from './mappers/posts.mapper';
 import { PostDto } from './dto/post.dto';
-import { UsersRepository } from 'src/users/users.repository';
+import { UsersRepository } from '../users/users.repository';
+import { User } from '../users/schemas/user.schema';
 
 @Injectable()
 export class PostsService {

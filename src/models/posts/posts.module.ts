@@ -3,9 +3,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
 import { PostsRepository } from './posts.repository';
-import { Post, PostSchema } from './post.schema';
-import { AuthModule } from 'src/auth/auth.module';
-import { UsersModule } from 'src/users/users.module';
+import { Post, PostSchema } from './schemas/post.schema';
+import { AuthModule } from '../../auth/auth.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
