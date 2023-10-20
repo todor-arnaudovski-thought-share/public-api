@@ -9,17 +9,17 @@ import {
 } from '@nestjs/common';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthService } from './auth.service';
-import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { User } from '../models/users/schemas/user.schema';
 import { UserDto } from '../models/users/dto/user.dto';
 import { mapUserToDto } from '../models/users/mappers/user.mapper';
+import { JwtAuthGuard } from '../common/guards/auth/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @UseGuards(AuthGuard())
+  @UseGuards(JwtAuthGuard)
   @Get('user')
   async verifyUser(@Req() req: Request): Promise<UserDto> {
     const user = req?.user as User;

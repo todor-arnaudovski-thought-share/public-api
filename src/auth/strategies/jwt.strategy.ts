@@ -11,8 +11,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private usersService: UsersService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        JwtStrategy.extractJwt,
-        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        JwtStrategy.extractJwt, // if we don't have access_toke in cookies...
+        ExtractJwt.fromAuthHeaderAsBearerToken(), // extract from auth header
       ]),
       ignoreExpiration: false,
       secretOrKey: 'jwt-secret',
@@ -33,7 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload): Promise<User> {
     const { username } = payload;
-    const user: User = await this.usersService.findByUsername(username);
+    const user: User = await this.usersService.findByUsername(username); // refactor to using pubId instead of username
 
     if (!user) {
       throw new UnauthorizedException();

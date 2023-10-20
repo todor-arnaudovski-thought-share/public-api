@@ -10,10 +10,10 @@ import {
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { Post as PostModel } from './schemas/post.schema';
-import { AuthGuard } from '@nestjs/passport';
 import { PostDto } from './dto/post.dto';
 import { User } from '../users/schemas/user.schema';
 import { GetUser } from '../../common/decorators/requests/get-user.decorator';
+import { JwtAuthGuard } from '../../common/guards/auth/jwt-auth.guard';
 
 @Controller('posts')
 export class PostsController {
@@ -24,7 +24,7 @@ export class PostsController {
     return await this.postsService.findAll();
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(
     @Body() createPostDto: CreatePostDto,
@@ -33,7 +33,7 @@ export class PostsController {
     return this.postsService.create(createPostDto, user);
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(JwtAuthGuard)
   @Patch(':id/upvote')
   async upvote(
     @Param('id') postPubId: string,
@@ -42,7 +42,7 @@ export class PostsController {
     return await this.postsService.upvote(postPubId, user);
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(JwtAuthGuard)
   @Patch(':id/downvote')
   async downvote(
     @Param('id') postPubId: string,

@@ -12,7 +12,7 @@ import { UsersModule } from '../models/users/users.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    PassportModule.register({ defaultStrategy: 'jwt' }),
+    PassportModule,
     JwtModule.register({
       secret: 'jwt-secret',
       signOptions: {
@@ -23,6 +23,6 @@ import { UsersModule } from '../models/users/users.module';
   ],
   controllers: [AuthController],
   providers: [AuthRepository, AuthService, JwtStrategy],
-  exports: [JwtStrategy, PassportModule],
+  exports: [AuthService],
 })
 export class AuthModule {}
