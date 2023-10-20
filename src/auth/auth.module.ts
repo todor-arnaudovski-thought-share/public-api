@@ -7,6 +7,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthRepository } from './auth.repository';
 import { User, UserSchema } from '../models/users/schemas/user.schema';
+import { UsersModule } from '../models/users/users.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { User, UserSchema } from '../models/users/schemas/user.schema';
         expiresIn: 3600, // 1 hour
       },
     }),
+    UsersModule,
   ],
   controllers: [AuthController],
   providers: [AuthRepository, AuthService, JwtStrategy],

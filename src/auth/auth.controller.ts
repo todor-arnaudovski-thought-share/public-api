@@ -28,8 +28,10 @@ export class AuthController {
   }
 
   @Post('signup')
-  async signUp(@Body() authCredentialsDto: AuthCredentialsDto): Promise<User> {
-    return await this.authService.signUp(authCredentialsDto);
+  async register(
+    @Body() authCredentialsDto: AuthCredentialsDto,
+  ): Promise<User> {
+    return await this.authService.register(authCredentialsDto);
   }
 
   @Post('login')

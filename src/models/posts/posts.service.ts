@@ -4,8 +4,8 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { PostsRepository } from './posts.repository';
 import { mapPostToDto } from './mappers/posts.mapper';
 import { PostDto } from './dto/post.dto';
-import { UsersRepository } from '../users/users.repository';
 import { User } from '../users/schemas/user.schema';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class PostsService {
@@ -13,7 +13,7 @@ export class PostsService {
 
   constructor(
     private readonly postsRepository: PostsRepository,
-    private readonly usersRepository: UsersRepository,
+    private readonly usersService: UsersService,
   ) {}
 
   async findAll(): Promise<PostDto[]> {
@@ -33,7 +33,7 @@ export class PostsService {
     }
 
     // add post to upvotedPosts in user
-    await this.usersRepository.addUpvotedPost(user, post);
+    await this.usersService.addUpvotedPost(user, post);
 
     const postDto = mapPostToDto(post);
     return postDto;
@@ -46,7 +46,7 @@ export class PostsService {
     }
 
     // remove post from upvotedPosts in user
-    await this.usersRepository.removeUpvotedPost(user, post);
+    await this.usersService.removeUpvotedPost(user, post);
 
     const postDto = mapPostToDto(post);
     return postDto;

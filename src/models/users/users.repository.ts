@@ -2,6 +2,7 @@ import {
   Injectable,
   Logger,
   InternalServerErrorException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -19,6 +20,33 @@ export class UsersRepository {
       return await this.userModel.find().populate('upvotedPosts').exec();
     } catch (err) {
       this.logger.error('Error fetching all users', err);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async findByUsername(username: string): Promise<User> {
+    try {
+      return await this.userModel
+        .findOne({ username })
+        .populate('upvotedPosts')
+        .exec();
+    } catch (err) {
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async create(username: string, password: string): Promise<User> {
+    try {
+      const createdUser = new this.userModel({
+        username,
+        password,
+      });
+
+      return await createdUser.save();
+    } catch (err) {
+      if (err.code === 11000) {
+        throw new ConflictException('Username already exists');
+      }
       throw new InternalServerErrorException();
     }
   }
