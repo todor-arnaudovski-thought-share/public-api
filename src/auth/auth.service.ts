@@ -13,12 +13,14 @@ import { mapUserToDto } from '../models/users/mappers/user.mapper';
 import { UsersService } from '../models/users/users.service';
 import { Tokens } from './interfaces/tokens.interface';
 import * as crypto from 'crypto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UsersService,
+    private configService: ConfigService,
     private jwtService: JwtService,
+    private readonly usersService: UsersService,
   ) {}
 
   async register(authCredentialsDto: AuthCredentialsDto): Promise<{
@@ -81,7 +83,6 @@ export class AuthService {
     if (!user?.hashedRt) throw new ForbiddenException('Access denied');
 
     const hashedRt = this.hashData(rt);
-    // const isRtMatch = await bcrypt.compare(rt, user.hashedRt);
     const isRtHashMatch = hashedRt === user.hashedRt;
     if (!isRtHashMatch) throw new ForbiddenException('Access denied');
 
@@ -94,7 +95,6 @@ export class AuthService {
   }
 
   async hashAndUpdateRtHash(pubId: string, rt: string): Promise<void> {
-    // const hashedRt = await bcrypt.hash(rt, 10);
     const hashedRt = this.hashData(rt);
     await this.usersService.updateRtHash(pubId, hashedRt);
   }
@@ -102,12 +102,12 @@ export class AuthService {
   async createTokens(payload: JwtPayload): Promise<Tokens> {
     const [at, rt] = await Promise.all([
       await this.jwtService.signAsync(payload, {
-        secret: 'jwt-secret',
-        expiresIn: '15sec',
+        secret: this.configService.get<string>('JWT_AT_SECRET'),
+        expiresIn: this.configService.get<string>('JWT_AT_EXPIRE'),
       }),
       await this.jwtService.signAsync(payload, {
-        secret: 'jwt-refresh-secret',
-        expiresIn: '7d',
+        secret: this.configService.get<string>('JWT_RT_SECRET'),
+        expiresIn: this.configService.get<string>('JWT_RT_EXPIRE'),
       }),
     ]);
 

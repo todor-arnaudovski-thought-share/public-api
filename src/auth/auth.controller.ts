@@ -17,10 +17,14 @@ import { JwtAuthGuard, JwtRefreshAuthGuard } from '../common/guards/auth';
 import { TokenNames, Tokens } from './interfaces/tokens.interface';
 import { GetCurrentUser, GetCurrentUserPubId } from '../common/decorators';
 import { setCookie } from '../common/utils';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private configService: ConfigService,
+    private authService: AuthService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('user')
@@ -91,8 +95,8 @@ export class AuthController {
 
   private setTokenCookies(res: Response, tokens: Tokens): void {
     const { access_token: at, refresh_token: rt } = tokens;
-    const atMaxAge = 5 * 1000; // 15min - TODO: get from config
-    const rtMaxAge = 30 * 1000; // 7 days - TODO: get from config
+    const atMaxAge = this.configService.get<number>('AT_COOKIE_EXPIRE') * 1000;
+    const rtMaxAge = this.configService.get<number>('RT_COOKIE_EXPIRE') * 1000;
     setCookie(res, TokenNames.access_token, at, atMaxAge);
     setCookie(res, TokenNames.refresh_token, rt, rtMaxAge);
   }

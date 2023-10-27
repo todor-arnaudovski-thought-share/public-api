@@ -5,21 +5,22 @@ import { Request } from 'express';
 import { TokenNames } from '../interfaces/tokens.interface';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { JwtPayloadWithRt } from '../interfaces/jwt-payload-with-rt.interface';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
   Strategy,
   'jwt-refresh',
 ) {
-  constructor() {
+  constructor(private configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         JwtRefreshStrategy.extractRefreshToken,
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
       passReqToCallback: true,
-      // ignoreExpiration: false,
-      secretOrKey: 'jwt-refresh-secret', // TODO: get from config
+      ignoreExpiration: false,
+      secretOrKey: configService.get<string>('JWT_RT_SECRET'),
     });
   }
 

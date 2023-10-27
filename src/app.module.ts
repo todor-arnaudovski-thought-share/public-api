@@ -3,9 +3,18 @@ import { MongoDbDatabaseProviderModule } from './providers/database/mongodb/prov
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './models/users/users.module';
 import { PostsModule } from './models/posts/posts.module';
+import { ConfigModule } from '@nestjs/config';
+import { configValidationSchema } from './config-validation.schema';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: `.env.${process.env.STAGE ?? 'development'}`,
+      validationSchema: configValidationSchema,
+      validationOptions: {
+        abortEarly: true,
+      },
+    }),
     MongoDbDatabaseProviderModule,
     PostsModule,
     AuthModule,
