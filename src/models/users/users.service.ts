@@ -11,6 +11,14 @@ import { Post } from '../posts/schemas/post.schema';
 export class UsersService {
   constructor(private usersRepository: UsersRepository) {}
 
+  async updateRtHash(pubId: string, hashedRt: string): Promise<void> {
+    await this.usersRepository.updateRtHash(pubId, hashedRt);
+  }
+
+  async removeRtHash(pubId: string): Promise<void> {
+    await this.usersRepository.removeRtHash(pubId);
+  }
+
   async findAll(): Promise<UserDto[]> {
     const users = await this.usersRepository.findAll();
     const userDtos = users.map((user) => mapUserToDto(user));
@@ -19,6 +27,10 @@ export class UsersService {
 
   async findByUsername(username: string): Promise<User> {
     return await this.usersRepository.findByUsername(username);
+  }
+
+  async findByPubId(pubId: string): Promise<User> {
+    return await this.usersRepository.findByPubId(pubId);
   }
 
   async create(authCredentialsDto: AuthCredentialsDto): Promise<User> {

@@ -15,6 +15,27 @@ export class UsersRepository {
 
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
+  async updateRtHash(pubId: string, hashedRt: string): Promise<void> {
+    try {
+      await this.userModel.updateOne({ pubId }, { hashedRt });
+    } catch (err) {
+      this.logger.error('Error updating refresh token hash', err);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async removeRtHash(pubId: string): Promise<void> {
+    try {
+      await this.userModel.updateOne(
+        { pubId, hashedRt: { $ne: null } },
+        { hashedRt: null },
+      );
+    } catch (err) {
+      this.logger.error('Error removing refresh token hash', err);
+      throw new InternalServerErrorException();
+    }
+  }
+
   async findAll(): Promise<User[]> {
     try {
       return await this.userModel.find().populate('upvotedPosts').exec();
@@ -28,6 +49,17 @@ export class UsersRepository {
     try {
       return await this.userModel
         .findOne({ username })
+        .populate('upvotedPosts')
+        .exec();
+    } catch (err) {
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async findByPubId(pubId: string): Promise<User> {
+    try {
+      return await this.userModel
+        .findOne({ pubId })
         .populate('upvotedPosts')
         .exec();
     } catch (err) {
@@ -60,7 +92,7 @@ export class UsersRepository {
         },
       );
     } catch (err) {
-      this.logger.error('Error addning upvoted post to user', err);
+      this.logger.error('Error adding upvoted post to user', err);
       throw new InternalServerErrorException();
     }
   }

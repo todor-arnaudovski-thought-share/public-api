@@ -3,17 +3,20 @@ import {
   Controller,
   Post,
   UseGuards,
-  Req,
   Get,
   Res,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthService } from './auth.service';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { User } from '../models/users/schemas/user.schema';
 import { UserDto } from '../models/users/dto/user.dto';
 import { mapUserToDto } from '../models/users/mappers/user.mapper';
-import { JwtAuthGuard } from '../common/guards/auth/jwt-auth.guard';
+import { JwtAuthGuard, JwtRefreshAuthGuard } from '../common/guards/auth';
+import { TokenNames, Tokens } from './interfaces/tokens.interface';
+import { GetCurrentUser, GetCurrentUserPubId } from '../common/decorators';
+import { setCookie } from '../common/utils';
 
 @Controller('auth')
 export class AuthController {
@@ -21,17 +24,24 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('user')
-  async verifyUser(@Req() req: Request): Promise<UserDto> {
-    const user = req?.user as User;
+  async verifyUser(@GetCurrentUser() user: User): Promise<UserDto> {
     const userDto = mapUserToDto(user);
     return userDto;
   }
 
-  @Post('signup')
+  @Post('register')
   async register(
     @Body() authCredentialsDto: AuthCredentialsDto,
-  ): Promise<User> {
-    return await this.authService.register(authCredentialsDto);
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<UserDto> {
+    const { userDto, tokens } =
+      await this.authService.register(authCredentialsDto);
+
+    this.setTokenCookies(res, tokens);
+
+    if (!userDto) throw new InternalServerErrorException();
+
+    return userDto;
   }
 
   @Post('login')
@@ -39,20 +49,56 @@ export class AuthController {
     @Body() authCredentialsDto: AuthCredentialsDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<UserDto> {
-    const signedInUser = await this.authService.login(authCredentialsDto);
-    res.cookie('access_token', signedInUser.accessToken, {
-      expires: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
-      httpOnly: true,
-    });
-    return signedInUser.userDto;
+    const { userDto, tokens } =
+      await this.authService.login(authCredentialsDto);
+
+    this.setTokenCookies(res, tokens);
+
+    if (!userDto) throw new InternalServerErrorException();
+
+    return userDto;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@Res({ passthrough: true }) res: Response): Promise<void> {
-    res.cookie('access_token', null, {
-      expires: new Date(Date.now()),
-      httpOnly: true,
-    });
-    return null;
+  async logout(
+    @GetCurrentUser() user: User,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    await this.authService.logout(user.pubId);
+
+    this.setExpiredTokenCookies(res);
+  }
+
+  @UseGuards(JwtRefreshAuthGuard)
+  @Post('refresh')
+  async refresh(
+    @GetCurrentUserPubId() pubId: string,
+    @GetCurrentUser('refreshToken') refreshToken: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<UserDto> {
+    const { userDto, tokens } = await this.authService.refresh(
+      pubId,
+      refreshToken,
+    );
+
+    this.setTokenCookies(res, tokens);
+
+    if (!userDto) throw new InternalServerErrorException();
+
+    return userDto;
+  }
+
+  private setTokenCookies(res: Response, tokens: Tokens): void {
+    const { access_token: at, refresh_token: rt } = tokens;
+    const atMaxAge = 5 * 1000; // 15min - TODO: get from config
+    const rtMaxAge = 30 * 1000; // 7 days - TODO: get from config
+    setCookie(res, TokenNames.access_token, at, atMaxAge);
+    setCookie(res, TokenNames.refresh_token, rt, rtMaxAge);
+  }
+
+  private setExpiredTokenCookies(res: Response): void {
+    setCookie(res, TokenNames.access_token);
+    setCookie(res, TokenNames.refresh_token);
   }
 }

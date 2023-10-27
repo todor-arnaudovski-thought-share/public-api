@@ -12,8 +12,8 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { Post as PostModel } from './schemas/post.schema';
 import { PostDto } from './dto/post.dto';
 import { User } from '../users/schemas/user.schema';
-import { GetUser } from '../../common/decorators/requests/get-user.decorator';
-import { JwtAuthGuard } from '../../common/guards/auth/jwt-auth.guard';
+import { GetCurrentUser } from '../../common/decorators';
+import { JwtAuthGuard } from '../../common/guards/auth';
 
 @Controller('posts')
 export class PostsController {
@@ -28,7 +28,7 @@ export class PostsController {
   @Post()
   async create(
     @Body() createPostDto: CreatePostDto,
-    @GetUser() user: User,
+    @GetCurrentUser() user: User,
   ): Promise<PostModel> {
     return this.postsService.create(createPostDto, user);
   }
@@ -37,7 +37,7 @@ export class PostsController {
   @Patch(':id/upvote')
   async upvote(
     @Param('id') postPubId: string,
-    @GetUser() user: User,
+    @GetCurrentUser() user: User,
   ): Promise<PostDto> {
     return await this.postsService.upvote(postPubId, user);
   }
@@ -46,7 +46,7 @@ export class PostsController {
   @Patch(':id/downvote')
   async downvote(
     @Param('id') postPubId: string,
-    @GetUser() user: User,
+    @GetCurrentUser() user: User,
   ): Promise<PostDto> {
     return await this.postsService.downvote(postPubId, user);
   }

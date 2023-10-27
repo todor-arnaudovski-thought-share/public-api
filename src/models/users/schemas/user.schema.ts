@@ -18,6 +18,9 @@ export class User extends Document {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Post' }] })
   upvotedPosts: Types.ObjectId[] | Post[];
+
+  @Prop()
+  hashedRt: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
