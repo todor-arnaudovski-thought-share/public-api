@@ -4,7 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './models/users/users.module';
 import { PostsModule } from './models/posts/posts.module';
 import { ConfigModule } from '@nestjs/config';
-import { configValidationSchema } from './config-validation.schema';
+import { configValidationSchema } from './config';
 
 @Module({
   imports: [
