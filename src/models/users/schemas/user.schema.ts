@@ -10,6 +10,8 @@ export class User extends Document {
   @Prop({ default: () => nanoid(), unique: true })
   pubId: string;
 
+  // email: string;
+
   @Prop({ required: true, unique: true })
   username: string;
 

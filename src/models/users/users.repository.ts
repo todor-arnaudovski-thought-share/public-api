@@ -77,7 +77,9 @@ export class UsersRepository {
       return await createdUser.save();
     } catch (err) {
       if (err.code === 11000) {
-        throw new ConflictException('Username already exists');
+        throw new ConflictException(
+          'A user with this username is already registered',
+        );
       }
       throw new InternalServerErrorException();
     }
