@@ -1,15 +1,15 @@
 import { PostDto } from '../dto/post.dto';
 import { Document } from 'mongoose';
 import { Post } from '../schemas/post.schema';
-import { UserDto } from '../../users/dto/user.dto';
+import { UserPublicDto } from '../../users/dto/user-public.dto';
 import { mapUserToDto } from '../../users/mappers/user.mapper';
 import { User } from '../../users/schemas/user.schema';
 
 export function mapPostToDto(post: Post): PostDto {
   const { createdAt, pubId, content, createdBy, upvotedBy } = post;
 
-  let mappedCreatedBy: UserDto;
-  let mappedUpvotedBy: UserDto[];
+  let mappedCreatedBy: UserPublicDto;
+  let mappedUpvotedBy: UserPublicDto[];
 
   if (createdBy instanceof Document) {
     mappedCreatedBy = mapUserToDto(createdBy as User);

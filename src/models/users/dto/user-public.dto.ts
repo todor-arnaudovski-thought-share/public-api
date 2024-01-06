@@ -1,7 +1,7 @@
 import { IsString } from 'class-validator';
 import { PostDto } from '../../posts/dto/post.dto';
 
-export class UserDto {
+export class UserPublicDto {
   @IsString()
   pubId: string;
 

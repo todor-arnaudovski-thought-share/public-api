@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString } from 'class-validator';
-import { UserDto } from '../../users/dto/user.dto';
+import { UserPublicDto } from '../../users/dto/user-public.dto';
 
 export class PostDto {
   createdAt: Date;
@@ -10,7 +10,7 @@ export class PostDto {
   content: string;
 
   @IsNotEmpty()
-  createdBy: UserDto;
+  createdBy: UserPublicDto;
 
-  upvotedBy: UserDto[];
+  upvotedBy: UserPublicDto[];
 }

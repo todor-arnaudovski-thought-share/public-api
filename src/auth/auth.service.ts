@@ -4,16 +4,16 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { UserDto } from '../models/users/dto/user.dto';
+import { UserPublicDto } from '../models/users/dto/user-public.dto';
 import { mapUserToDto } from '../models/users/mappers/user.mapper';
 import { UsersService } from '../models/users/users.service';
 import { Tokens } from './interfaces/tokens.interface';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
+import { LoginUserDto, RegisterUserDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -23,14 +23,14 @@ export class AuthService {
     private readonly usersService: UsersService,
   ) {}
 
-  async register(authCredentialsDto: AuthCredentialsDto): Promise<{
+  async register(registerUserDto: RegisterUserDto): Promise<{
     tokens: Tokens;
-    userDto: UserDto;
+    UserPublicDto: UserPublicDto;
   }> {
-    const user = await this.usersService.create(authCredentialsDto);
+    const user = await this.usersService.create(registerUserDto);
 
     if (user) {
-      const userDto = mapUserToDto(user);
+      const UserPublicDto = mapUserToDto(user);
       const payload: JwtPayload = {
         pubId: user.pubId,
         username: user.username,
@@ -38,19 +38,19 @@ export class AuthService {
       const tokens: Tokens = await this.createTokens(payload);
       await this.hashAndUpdateRtHash(user.pubId, tokens.refresh_token);
 
-      return { tokens, userDto };
+      return { tokens, UserPublicDto };
     } else {
       throw new InternalServerErrorException();
     }
   }
 
-  async login(authCredentialsDto: AuthCredentialsDto): Promise<{
+  async login(loginUserDto: LoginUserDto): Promise<{
     tokens: Tokens;
-    userDto: UserDto;
+    UserPublicDto: UserPublicDto;
   }> {
-    const { username, password } = authCredentialsDto;
+    const { email, password } = loginUserDto;
 
-    const user = await this.usersService.findByUsername(username);
+    const user = await this.usersService.findByEmail(email);
 
     if (!user?.password)
       throw new UnauthorizedException('Wrong login credentials');
@@ -59,12 +59,12 @@ export class AuthService {
     if (!isPasswordMatch)
       throw new UnauthorizedException('Wrong login credentials');
 
-    const userDto = mapUserToDto(user);
+    const UserPublicDto = mapUserToDto(user);
     const payload: JwtPayload = { pubId: user.pubId, username: user.username };
     const tokens: Tokens = await this.createTokens(payload);
     await this.hashAndUpdateRtHash(user.pubId, tokens.refresh_token);
 
-    return { tokens, userDto };
+    return { tokens, UserPublicDto };
   }
 
   async logout(pubId: string): Promise<void> {
@@ -76,7 +76,7 @@ export class AuthService {
     rt: string,
   ): Promise<{
     tokens: Tokens;
-    userDto: UserDto;
+    UserPublicDto: UserPublicDto;
   }> {
     const user = await this.usersService.findByPubId(pubId);
 
@@ -86,12 +86,12 @@ export class AuthService {
     const isRtHashMatch = hashedRt === user.hashedRt;
     if (!isRtHashMatch) throw new ForbiddenException('Access denied');
 
-    const userDto = mapUserToDto(user);
+    const UserPublicDto = mapUserToDto(user);
     const payload: JwtPayload = { pubId: user.pubId, username: user.username };
     const tokens: Tokens = await this.createTokens(payload);
     await this.hashAndUpdateRtHash(user.pubId, tokens.refresh_token);
 
-    return { tokens, userDto };
+    return { tokens, UserPublicDto };
   }
 
   async hashAndUpdateRtHash(pubId: string, rt: string): Promise<void> {

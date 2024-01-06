@@ -45,10 +45,10 @@ export class UsersRepository {
     }
   }
 
-  async findByUsername(username: string): Promise<User> {
+  async findByEmail(email: string): Promise<User> {
     try {
       return await this.userModel
-        .findOne({ username })
+        .findOne({ email })
         .populate('upvotedPosts')
         .exec();
     } catch (err) {
@@ -67,9 +67,14 @@ export class UsersRepository {
     }
   }
 
-  async create(username: string, password: string): Promise<User> {
+  async create(
+    email: string,
+    username: string,
+    password: string,
+  ): Promise<User> {
     try {
       const createdUser = new this.userModel({
+        email,
         username,
         password,
       });
@@ -78,7 +83,7 @@ export class UsersRepository {
     } catch (err) {
       if (err.code === 11000) {
         throw new ConflictException(
-          'A user with this username is already registered',
+          'A user with this email or username is already registered',
         );
       }
       throw new InternalServerErrorException();
@@ -111,5 +116,14 @@ export class UsersRepository {
       this.logger.error('Error removing upvoted post from user', err);
       throw new InternalServerErrorException();
     }
+  }
+
+  async markEmailAsVerified(email: string) {
+    return this.userModel.updateOne(
+      { email },
+      {
+        isEmailVerified: true,
+      },
+    );
   }
 }

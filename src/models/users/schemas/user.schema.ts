@@ -10,7 +10,11 @@ export class User extends Document {
   @Prop({ default: () => nanoid(), unique: true })
   pubId: string;
 
-  // email: string;
+  @Prop({ required: true, unique: true })
+  email: string;
+
+  @Prop({ default: false })
+  isEmailVerified: boolean;
 
   @Prop({ required: true, unique: true })
   username: string;

@@ -7,60 +7,68 @@ import {
   Res,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { User } from '../models/users/schemas/user.schema';
-import { UserDto } from '../models/users/dto/user.dto';
+import { UserPublicDto } from '../models/users/dto/user-public.dto';
 import { mapUserToDto } from '../models/users/mappers/user.mapper';
 import { JwtAuthGuard, JwtRefreshAuthGuard } from '../common/guards/auth';
 import { TokenNames, Tokens } from './interfaces/tokens.interface';
 import { GetCurrentUser, GetCurrentUserPubId } from '../common/decorators';
 import { setCookie } from '../common/utils';
 import { ConfigService } from '@nestjs/config';
+import { LoginUserDto, RegisterUserDto } from './dto';
+import { EmailConfirmationService } from '../email/email-confirmation.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private configService: ConfigService,
     private authService: AuthService,
+    private emailConfirmationService: EmailConfirmationService,
   ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('user')
-  async verifyUser(@GetCurrentUser() user: User): Promise<UserDto> {
-    const userDto = mapUserToDto(user);
-    return userDto;
+  async verifyUser(@GetCurrentUser() user: User): Promise<UserPublicDto> {
+    const UserPublicDto = mapUserToDto(user);
+    return UserPublicDto;
   }
 
   @Post('register')
   async register(
-    @Body() authCredentialsDto: AuthCredentialsDto,
+    @Body() registerUserDto: RegisterUserDto,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<UserDto> {
-    const { userDto, tokens } =
-      await this.authService.register(authCredentialsDto);
+  ): Promise<UserPublicDto> {
+    const { UserPublicDto, tokens } =
+      await this.authService.register(registerUserDto);
+
+    // TODO: maybe check if user exists first before attempting to send mail and
+    // create the user after successfully seding the verification mail
+    await this.emailConfirmationService.sendVerificationLink(
+      registerUserDto.email,
+    );
 
     this.setTokenCookies(res, tokens);
 
-    if (!userDto) throw new InternalServerErrorException();
+    if (!UserPublicDto) throw new InternalServerErrorException();
 
-    return userDto;
+    return UserPublicDto;
   }
 
   @Post('login')
   async singIn(
-    @Body() authCredentialsDto: AuthCredentialsDto,
+    @Body() loginUserDto: LoginUserDto,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<UserDto> {
-    const { userDto, tokens } =
-      await this.authService.login(authCredentialsDto);
+  ): Promise<UserPublicDto> {
+    const { UserPublicDto, tokens } =
+      await this.authService.login(loginUserDto);
 
     this.setTokenCookies(res, tokens);
 
-    if (!userDto) throw new InternalServerErrorException();
+    if (!UserPublicDto) throw new InternalServerErrorException();
 
-    return userDto;
+    return UserPublicDto;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -80,17 +88,17 @@ export class AuthController {
     @GetCurrentUserPubId() pubId: string,
     @GetCurrentUser('refreshToken') refreshToken: string,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<UserDto> {
-    const { userDto, tokens } = await this.authService.refresh(
+  ): Promise<UserPublicDto> {
+    const { UserPublicDto, tokens } = await this.authService.refresh(
       pubId,
       refreshToken,
     );
 
     this.setTokenCookies(res, tokens);
 
-    if (!userDto) throw new InternalServerErrorException();
+    if (!UserPublicDto) throw new InternalServerErrorException();
 
-    return userDto;
+    return UserPublicDto;
   }
 
   private setTokenCookies(res: Response, tokens: Tokens): void {

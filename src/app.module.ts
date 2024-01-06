@@ -5,6 +5,7 @@ import { UsersModule } from './models/users/users.module';
 import { PostsModule } from './models/posts/posts.module';
 import { ConfigModule } from '@nestjs/config';
 import { configValidationSchema } from './config';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { configValidationSchema } from './config';
     PostsModule,
     AuthModule,
     UsersModule,
+    EmailModule,
   ],
 })
 export class AppModule {}

@@ -1,16 +1,16 @@
 import { PostDto } from '../../posts/dto/post.dto';
 import { Post } from '../../posts/schemas/post.schema';
 import { mapPostToDto } from '../../posts/mappers/posts.mapper';
-import { UserDto } from '../dto/user.dto';
+import { UserPublicDto } from '../dto/user-public.dto';
 import { User } from '../schemas/user.schema';
 import { Document } from 'mongoose';
 
-export function mapUserToDto(user: User): UserDto {
+export function mapUserToDto(user: User): UserPublicDto {
   const { pubId, username, upvotedPosts } = user;
 
   let mappedUpvotedPosts: PostDto[];
 
-  const userDto: UserDto = {
+  const UserPublicDto: UserPublicDto = {
     pubId,
     username,
   };
@@ -25,8 +25,8 @@ export function mapUserToDto(user: User): UserDto {
     mappedUpvotedPosts = (upvotedPosts as Post[]).map((post) => {
       return mapPostToDto(post);
     });
-    if (mappedUpvotedPosts) userDto.upvotedPosts = mappedUpvotedPosts;
+    if (mappedUpvotedPosts) UserPublicDto.upvotedPosts = mappedUpvotedPosts;
   }
 
-  return userDto;
+  return UserPublicDto;
 }

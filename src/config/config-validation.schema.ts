@@ -13,4 +13,10 @@ export const configValidationSchema = Joi.object({
   JWT_RT_EXPIRE: Joi.string().required(),
   AT_COOKIE_EXPIRE: Joi.number().integer().required(),
   RT_COOKIE_EXPIRE: Joi.number().integer().required(),
+  EMAIL_SERVICE: Joi.string().required(),
+  EMAIL_USER: Joi.string().required(),
+  EMAIL_APP_PASSWORD: Joi.string().required(),
+  EMAIL_JWT_SECRET: Joi.string().required(),
+  EMAIL_JWT_EXPIRE: Joi.string().required(),
+  EMAIL_CONFIRMATION_URL: Joi.string().required(),
 });
